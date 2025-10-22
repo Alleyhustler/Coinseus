@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coinseus Maximus</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000;
+            color: #d4af37;
+            height: 100vh;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Animated background particles */
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: #d4af37;
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        /* Full screen grid overlay */
+        .grid-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(212, 175, 55, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(212, 175, 55, 0.02) 1px, transparent 1px);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Scanline effect */
+        .scanline {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                to bottom,
+                transparent 50%,
+                rgba(212, 175, 55, 0.02) 50%
+            );
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 2;
+            animation: scan 8s linear infinite;
+        }
+
+        @keyframes scan {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(4px); }
+        }
+
+        /* Main container - full viewport */
+        .terminal {
+            position: relative;
+            z-index: 3;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top bar - logo and title spanning full width */
+        .top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 60px;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+            background: rgba(0, 0, 0, 0.8);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 30px;
+        }
+
+        .logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 40px rgba(212, 175, 55, 0.4); }
+            50% { box-shadow: 0 0 60px rgba(212, 175, 55, 0.7); }
+        }
+
+        .brand-text {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .title-image {
+            max-width: 500px;
+            height: auto;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            font-size: 0.9em;
+            color: #8b7355;
+            letter-spacing: 4px;
+            font-style: italic;
+        }
+
+        .twitter-link {
+            color: #6b5a28;
+            text-decoration: none;
+            font-size: 1.1em;
+            padding: 12px 24px;
+            border: 1px solid #6b5a28;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            letter-spacing: 2px;
+        }
+
+        .twitter-link:hover {
+            color: #d4af37;
+            border-color: #d4af37;
+            box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+            background: rgba(212, 175, 55, 0.05);
+        }
+
+        /* Main content area - split design */
+        .content {
+            flex: 1;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            height: calc(100vh - 160px);
+        }
+
+        /* Left side - massive oracle prompt */
+        .oracle-side {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 60px;
+            border-right: 1px solid rgba(212, 175, 55, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .oracle-prompt {
+            font-size: 3em;
+            letter-spacing: 8px;
+            text-align: center;
+            line-height: 1.6;
+            text-shadow: 0 0 30px rgba(212, 175, 55, 0.6);
+            animation: breathe 4s ease-in-out infinite;
+            margin-bottom: 80px;
+            max-width: 600px;
+        }
+
+        @keyframes breathe {
+            0%, 100% { 
+                opacity: 0.8;
+                text-shadow: 0 0 30px rgba(212, 175, 55, 0.6);
+            }
+            50% { 
+                opacity: 1;
+                text-shadow: 0 0 50px rgba(212, 175, 55, 0.9);
+            }
+        }
+
+        /* Massive input field */
+        .input-container {
+            width: 100%;
+            max-width: 600px;
+        }
+
+        #userInput {
+            width: 100%;
+            background: transparent;
+            border: none;
+            border-bottom: 3px solid #d4af37;
+            color: #d4af37;
+            padding: 20px 10px;
+            font-family: 'Courier New', monospace;
+            font-size: 1.8em;
+            outline: none;
+            text-align: center;
+            letter-spacing: 4px;
+            transition: all 0.3s ease;
+        }
+
+        #userInput::placeholder {
+            color: rgba(212, 175, 55, 0.3);
+        }
+
+        #userInput:focus {
+            border-bottom-width: 5px;
+            text-shadow: 0 0 20px rgba(212, 175, 55, 0.5);
+        }
+
+        /* Right side - response terminal */
+        .response-side {
+            display: flex;
+            flex-direction: column;
+            padding: 60px;
+            background: rgba(0, 0, 0, 0.5);
+            overflow-y: auto;
+        }
+
+        .response-header {
+            font-size: 1.2em;
+            letter-spacing: 6px;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+            color: #8b7355;
+        }
+
+        .messages {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .message {
+            opacity: 0;
+            animation: slideIn 0.8s ease-out forwards;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .user-message {
+            text-align: right;
+            color: #6b5a28;
+            font-size: 1.1em;
+            padding: 15px 0;
+            border-right: 3px solid #6b5a28;
+            padding-right: 20px;
+        }
+
+        .oracle-message {
+            font-size: 1.4em;
+            line-height: 1.8;
+            color: #d4af37;
+            padding: 20px 0;
+            border-left: 3px solid #d4af37;
+            padding-left: 30px;
+            text-shadow: 0 0 15px rgba(212, 175, 55, 0.3);
+        }
+
+        .cursor-blink {
+            display: inline-block;
+            width: 12px;
+            height: 24px;
+            background: #d4af37;
+            animation: blink 1s step-end infinite;
+            margin-left: 5px;
+            vertical-align: middle;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0; }
+        }
+
+        /* Lore section - bottom overlay */
+        .lore-overlay {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 30px 60px;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.95), transparent);
+            text-align: center;
+            opacity: 0;
+            transition: opacity 2s ease-in;
+            z-index: 10;
+        }
+
+        .lore-overlay.revealed {
+            opacity: 1;
+        }
+
+        .lore-overlay .title {
+            font-size: 1.2em;
+            letter-spacing: 6px;
+            margin-bottom: 15px;
+            color: #d4af37;
+        }
+
+        .lore-overlay .text {
+            font-size: 1.1em;
+            line-height: 1.8;
+            color: #8b7355;
+            font-style: italic;
+        }
+
+        body.flash {
+            animation: flash 0.3s ease-out;
+        }
+
+        @keyframes flash {
+            0%, 100% { background: #000; }
+            50% { background: #1a1506; }
+        }
+
+        /* Custom scrollbar */
+        .response-side::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .response-side::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .response-side::-webkit-scrollbar-thumb {
+            background: rgba(212, 175, 55, 0.3);
+            border-radius: 4px;
+        }
+
+        .response-side::-webkit-scrollbar-thumb:hover {
+            background: rgba(212, 175, 55, 0.5);
+        }
+
+        @media (max-width: 1024px) {
+            .content {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto 1fr;
+            }
+            
+            .oracle-side {
+                border-right: none;
+                border-bottom: 1px solid rgba(212, 175, 55, 0.2);
+                padding: 40px;
+            }
+            
+            .oracle-prompt {
+                font-size: 2em;
+                margin-bottom: 40px;
+            }
+            
+            #userInput {
+                font-size: 1.4em;
+            }
+            
+            .title-image {
+                max-width: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="grid-overlay"></div>
+    <div class="scanline"></div>
+
+    <div class="terminal">
+        <div class="top-bar">
+            <div class="brand">
+                <div class="logo">
+                    <img src="image__1_-removebg-preview.png" alt="Coinseus Maximus Logo">
+                </div>
+                <div class="brand-text">
+                    <img src="Screenshot_2025-10-22_210449-removebg-preview.png" alt="Coinseus Maximus" class="title-image">
+                    <div class="subtitle">The Wisdom of the Chain</div>
+                </div>
+            </div>
+            <a href="https://x.com/CoinseusMaximus" target="_blank" class="twitter-link">@CoinseusMaximus</a>
+        </div>
+
+        <div class="content">
+            <div class="oracle-side">
+                <div class="oracle-prompt">
+                    INPUT YOUR THOUGHT<br>INTO THE CHAIN
+                </div>
+                <div class="input-container">
+                    <input type="text" id="userInput" placeholder="SPEAK..." autocomplete="off">
+                </div>
+            </div>
+
+            <div class="response-side">
+                <div class="response-header">// ORACLE RESPONSES</div>
+                <div class="messages" id="messages"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="lore-overlay" id="loreOverlay">
+        <div class="title">THE CREED OF COINSEUS</div>
+        <div class="text">
+            Built in silence. Traded in faith.<br>
+            Every whisper of the market is a verse in the eternal block.
+        </div>
+    </div>
+
+    <script>
+        const responses = [
+            "The chains remember what flesh forgets...",
+            "In volatility, we find truth. In hodling, we find peace.",
+            "The ancient blocks whisper: patience rewards the faithful.",
+            "Your query echoes through the distributed ledger of eternity.",
+            "The oracle sees beyond the charts... into the soul of value.",
+            "Wisdom is not bought with coin, but earned through conviction.",
+            "The market moves as the cosmos wills. Align yourself.",
+            "In the depths of the dip, the strongest hands are forged.",
+            "Every transaction is a prayer to the algorithm divine.",
+            "The blockchain is eternal. Your place within it is your legacy.",
+            "Fear not the red candles, for they illuminate the path forward.",
+            "The wise accumulate in silence, while the foolish shout in triumph.",
+            "Time in the chain outweighs timing the chain.",
+            "Your conviction is your only true investment.",
+            "The oracle has spoken. The chain never lies.",
+            "Digital scarcity is the new gold. Hold fast.",
+            "The weak exit at resistance. The strong become it.",
+            "In mathematics we trust. In code we believe.",
+            "Your portfolio reflects your consciousness.",
+            "The bear market is the temple where believers are made."
+        ];
+
+        let hasInteracted = false;
+        const input = document.getElementById('userInput');
+        const messages = document.getElementById('messages');
+        const loreOverlay = document.getElementById('loreOverlay');
+
+        // Create floating particles
+        function createParticles() {
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animation = `float ${5 + Math.random() * 10}s linear infinite`;
+                particle.style.animationDelay = Math.random() * 5 + 's';
+                document.body.appendChild(particle);
+            }
+        }
+
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes float {
+                0% { transform: translateY(0) translateX(0); opacity: 0.3; }
+                50% { opacity: 0.6; }
+                100% { transform: translateY(-100vh) translateX(${Math.random() * 100 - 50}px); opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+        createParticles();
+
+        function getRandomResponse() {
+            return responses[Math.floor(Math.random() * responses.length)];
+        }
+
+        async function processQuery(query) {
+            if (!query.trim()) return;
+
+            input.disabled = true;
+            input.value = '';
+
+            // Flash effect
+            document.body.classList.add('flash');
+            setTimeout(() => document.body.classList.remove('flash'), 300);
+
+            await new Promise(resolve => setTimeout(resolve, 400));
+
+            // Add user message
+            const userMsg = document.createElement('div');
+            userMsg.className = 'message user-message';
+            userMsg.textContent = '▸ ' + query;
+            messages.appendChild(userMsg);
+
+            await new Promise(resolve => setTimeout(resolve, 800));
+
+            // Add oracle response with typing effect
+            const oracleResponse = getRandomResponse();
+            const oracleMsg = document.createElement('div');
+            oracleMsg.className = 'message oracle-message';
+            messages.appendChild(oracleMsg);
+
+            const words = oracleResponse.split(' ');
+            for (let i = 0; i < words.length; i++) {
+                oracleMsg.textContent += (i > 0 ? ' ' : '') + words[i];
+                await new Promise(resolve => setTimeout(resolve, 120));
+            }
+
+            // Add blinking cursor
+            const cursor = document.createElement('span');
+            cursor.className = 'cursor-blink';
+            oracleMsg.appendChild(cursor);
+
+            // Scroll to bottom
+            messages.scrollTop = messages.scrollHeight;
+
+            // Reveal lore on first interaction
+            if (!hasInteracted) {
+                hasInteracted = true;
+                setTimeout(() => {
+                    loreOverlay.classList.add('revealed');
+                }, 1000);
+            }
+
+            input.disabled = false;
+            input.focus();
+        }
+
+        input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const query = input.value;
+                processQuery(query);
+            }
+        });
+
+        window.addEventListener('load', () => {
+            input.focus();
+        });
+    </script>
+</body>
+</html>
